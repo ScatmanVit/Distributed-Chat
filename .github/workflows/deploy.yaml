@@ -1,0 +1,36 @@
+name: ci/cd e testes
+
+on: 
+  push:
+    branches: ['main'] 
+
+jobs:
+  build-and-test: 
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: checkout do código
+        uses: actions/checkout@v4 
+
+      - name: configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.21.1'
+    # adcionar testes aqui quando estiverem escritos
+
+  deploy: 
+    needs: build-and-test 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Executar comandos na VPS via SSH
+        uses: appleboy/ssh-action@master 
+        with:
+          host: ${{ secrets.REMOTE_HOST }} 
+          username: ${{ secrets.REMOTE_USER }} 
+          key: ${{ secrets.SSH_PRIVATE_KEY }} 
+          script: |
+            cd ~/link-mind
+            git pull origin main
+            touch teste-ci_cd.txt
+          ## docker compose up -d --build
