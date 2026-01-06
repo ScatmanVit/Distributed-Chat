@@ -30,7 +30,7 @@ jobs:
           username: ${{ secrets.REMOTE_USER }} 
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
           script: |
-            cd ~/link-mind
+            cd ~/chat_tempo_real_distribuido
             git pull origin main
             touch teste-ci_cd.txt
           ## docker compose up -d --build
