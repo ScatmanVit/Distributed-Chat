@@ -32,5 +32,5 @@ jobs:
           script: |
             cd ~/chat_tempo_real_distribuido
             git pull origin main
-            touch teste-ci_cd.txt
+            echo "ainda testando ci/cd, segunda vez funcionou" >> teste-ci_cd.txt
           ## docker compose up -d --build

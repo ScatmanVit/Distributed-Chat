@@ -1,0 +1,120 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: chat_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: chat_db
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d chat_db"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+    deploy:
+      resources:
+        limits:
+          cpus: "0.40"
+          memory: 1G
+    networks:
+      - chat_network
+
+  db_migrator:
+    build: ./db
+    container_name: chat_db_migrator
+    init: true
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/chat_db
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.70"
+          memory: 512M
+    networks:
+      - chat_network
+
+  server_rest:
+    build: ./server
+    container_name: chat_api
+    init: true
+    restart: always
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/chat_db
+    depends_on:
+      db_migrator:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "0.30"
+          memory: 512M
+    networks:
+      - chat_network
+
+  websocket:
+    build: ./websocket
+    init: true
+    restart: always
+    environment:
+      REDIS_HOST: redis
+      DATABASE_URL: postgres://user:password@db:5432/chat_db
+    depends_on:
+      redis:
+        condition: service_started
+      db_migrator:
+        condition: service_completed_successfully
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 400M
+    networks:
+      - chat_network
+
+  redis:
+    image: redis:alpine
+    container_name: chat_redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 256M
+    networks:
+      - chat_network
+
+  nginx:
+    build: ./.nginx
+    container_name: chat_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      websocket:
+        condition: service_started
+      server_rest:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 128M
+    networks:
+      - chat_network
+
+volumes:
+  postgres_data:
+
+networks:
+  chat_network:
+    driver: bridge
