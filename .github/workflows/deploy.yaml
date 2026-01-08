@@ -19,7 +19,7 @@ jobs:
 
       - name: instala dependências para testes
         working-directory: ./websocket
-        run: npm install
+        run: npm ci
 
       - name: testes de validação do websocket
         working-directory: ./websocket
@@ -39,5 +39,4 @@ jobs:
           script: |
             cd ~/chat_tempo_real_distribuido
             git pull origin main
-            echo "ainda testando ci/cd, terceira vez funcionou" >> teste-ci_cd.txt
-          ## docker compose up -d --build
+            docker compose up -d --build
