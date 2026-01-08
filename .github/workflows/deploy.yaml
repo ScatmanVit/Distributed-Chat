@@ -16,7 +16,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.21.1'
-    # adcionar testes aqui quando estiverem escritos
+
+      - name: testes de validação do websocket
+        working-directory: ./websocket
+        run: npm test
 
   deploy: 
     needs: build-and-test 
