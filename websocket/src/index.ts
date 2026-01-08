@@ -8,7 +8,7 @@ dotenv.config()
 
 const io = new Server({
    cors: {
-      origin: process.env.URL_FRONT_END,
+      origin: process.env.URL_FRONT_END, // '*' para desenvolvimento
       methods: ['GET', 'POST'],
    }
 })
