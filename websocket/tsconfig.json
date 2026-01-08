@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "NodeNext",          
+    "moduleResolution": "NodeNext", 
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -11,9 +11,5 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "src/__tests__/**/*", 
-    "**/*.test.ts", 
-    "**/*.spec.ts"
-  ] 
+  "exclude": ["src/__tests__/**/*", "**/*.test.ts", "**/*.spec.ts"]
 }

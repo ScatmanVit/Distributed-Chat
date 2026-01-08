@@ -1,7 +1,7 @@
-import { registerSchema, sendMessageSchema } from './validations/schemas'
-import { validateData } from './validations/validation'
+import { registerSchema, sendMessageSchema } from './validations/schemas.js'
+import { validateData } from './validations/validation.js'
 import { Server } from 'socket.io'
-import { db } from './db/pool'
+import { db } from './db/pool.js'
 import dotenv from 'dotenv'
 
 dotenv.config()
