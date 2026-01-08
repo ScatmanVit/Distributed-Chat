@@ -19,7 +19,7 @@ jobs:
 
       - name: instala dependências para testes
         working-directory: ./websocket
-        run: npm ci
+        run: npm install
 
       - name: testes de validação do websocket
         working-directory: ./websocket
