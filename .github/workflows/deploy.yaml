@@ -39,4 +39,5 @@ jobs:
           script: |
             cd ~/chat_tempo_real_distribuido
             git pull origin main
-            docker compose up -d --build
+            docker-compose down
+            docker-compose up -d --build
