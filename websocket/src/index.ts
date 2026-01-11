@@ -1,5 +1,6 @@
 import { registerSchema, sendMessageSchema } from './validations/schemas.js'
 import { validateData } from './validations/validation.js'
+import { socketAdapter } from './redis/pub-sub.js'
 import { Server } from 'socket.io'
 import { db } from './db/pool.js'
 import dotenv from 'dotenv'
@@ -7,6 +8,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const io = new Server({
+   adapter: socketAdapter,
    cors: {
       origin: process.env.URL_FRONT_END, // '*' para desenvolvimento
       methods: ['GET', 'POST'],
@@ -16,6 +18,7 @@ const io = new Server({
 console.log('🚀 Inicializando servidor WebSocket...')
 
 const onlineUsers = new Map()
+
 
 io.on('connection', (socket) => {
    console.log(`Cliente conectado: ${socket.id}`)
@@ -103,7 +106,7 @@ io.on('connection', (socket) => {
             callback({
                success: false,
                errors: [{
-                  field: 'database',
+                  field: 'server',
                   message: 'Erro ao salvar mensagem. Tente novamente.'
                }]
             })
@@ -121,6 +124,8 @@ io.on('connection', (socket) => {
    })
 })
 
+
+
 const PORT = process.env.PORT
 io.listen(Number(PORT))
-console.log(`WebSocket rodando na porta ${PORT}`)
+console.log(`\nWebSocket rodando na porta ${PORT}`)
