@@ -1,131 +1,83 @@
-import { registerSchema, sendMessageSchema } from './validations/schemas.js'
-import { validateData } from './validations/validation.js'
-import { socketAdapter } from './redis/pub-sub.js'
-import { Server } from 'socket.io'
-import { db } from './db/pool.js'
-import dotenv from 'dotenv'
+import { Server } from 'socket.io';
+import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { db } from './db/pool.js';
+import {
+   pubClient,
+   subClient,
+   closeRedisConnections,
+   redisOperations
+} from './redis/index.js';
+import { createUserService } from './services/user.js';
+import { createMessageService } from './services/message.js';
+import { handleRegister, handleDisconnect, createSendMessageHandler } from './handlers/index.js';
+import { logger } from './shared/logger.js';
 
-dotenv.config()
+dotenv.config();
 
-const io = new Server({
-   adapter: socketAdapter,
+const httpServer = createServer();
+const io = new Server(httpServer, {
+   adapter: createAdapter(pubClient, subClient),
    cors: {
-      origin: process.env.URL_FRONT_END, // '*' para desenvolvimento
-      methods: ['GET', 'POST'],
+      origin: process.env.URL_FRONT_END || '*',
+      methods: ['GET', 'POST']
    }
-})
+});
 
-console.log('🚀 Inicializando servidor WebSocket...')
+logger.info('Inicializando servidor WebSocket...');
 
-const onlineUsers = new Map()
+const userService = createUserService(db);
+const messageService = createMessageService(db);
 
+const registerHandler = handleRegister(userService);
+const sendMessageHandler = createSendMessageHandler(messageService, io, redisOperations);
 
 io.on('connection', (socket) => {
-   console.log(`Cliente conectado: ${socket.id}`)
+   logger.info(`Cliente conectado: ${socket.id}`);
 
-   socket.on('register', (data, callback) => {
-      const validated = validateData(registerSchema, { userId: data }, callback)
-      if (!validated) return
-
-      const { userId } = validated
-      onlineUsers.set(userId, socket.id)
-      socket.data.userId = userId
-
-      console.log(`Usuário registrado: ${userId}`)
-      console.log(`Total online: ${onlineUsers.size}`)
-
-      if (callback) callback({ success: true, userId })
-   })
-
-   socket.on('send-message', async (data, callback) => {
-      const validated = validateData(sendMessageSchema, data, callback)
-      if (!validated) return
-
-      if (!socket.data.userId) {
-         console.log('Usuário não registrado tentou enviar mensagem')
-         if (callback) {
-            callback({
-               success: false,
-               errors: [{ field: 'auth', message: 'Você precisa se registrar primeiro' }]
-            })
+   socket.on('register', async (data, callback) => {
+      registerHandler(socket, data, async (response: { success: boolean, userId?: string }) => {
+         if (response.success && response.userId) {
+            await redisOperations.setUserOnline(response.userId, socket.id);
+            const count = await redisOperations.getOnlineUsersCount();
+            logger.info(`Usuários online: ${count}`);
          }
-         return
-      }
+         if (callback) callback(response);
+      });
+   });
 
-      try {
-         const result = await db.query(`
-            INSERT INTO messages (sender_id, receiver_id, content, status)
-            VALUES ($1, $2, $3, $4)
-            RETURNING *
-         `, [
-               socket.data.userId,
-               validated.toUserId,
-               validated.content,
-            'sent'
-         ])
+   socket.on('send-message', (data, callback) => {
+      sendMessageHandler(socket, data, callback);
+   });
 
-         const savedMessage = result.rows[0]
-         console.log(`Mensagem salva no banco: ${savedMessage.id}`)
-
-         const message = {
-            id: savedMessage.id,
-            content: savedMessage.content,
-            fromUserId: savedMessage.sender_id,
-            toUserId: savedMessage.receiver_id,
-            timestamp: savedMessage.sent_at,
-            status: savedMessage.status
-         }
-
-         const recipientSocketId = onlineUsers.get(validated.toUserId)
-
-         if (recipientSocketId) {
-            io.to(recipientSocketId).emit('new-message', message)
-            console.log(`Enviado de ${message.fromUserId} para ${validated.toUserId}`)
-
-            await db.query(`
-               UPDATE messages 
-               SET status = 'delivered' 
-               WHERE id = $1
-        `, [savedMessage.id])
-
-            message.status = 'delivered'
-         } else {
-            console.log(`${validated.toUserId} não está online (mensagem salva no banco)`)
-         }
-
-         socket.emit('message-sent', message)
-
-         if (callback) {
-            callback({ success: true, message })
-         }
-
-      } catch (error) {
-         console.error('Erro ao salvar mensagem no banco:', error)
-
-         if (callback) {
-            callback({
-               success: false,
-               errors: [{
-                  field: 'server',
-                  message: 'Erro ao salvar mensagem. Tente novamente.'
-               }]
-            })
-         }
-      }
-   })
-
-   socket.on('disconnect', () => {
-      const userId = socket.data.userId
+   socket.on('disconnect', async () => {
+      const userId = socket.data.userId;
       if (userId) {
-         onlineUsers.delete(userId)
-         console.log(`${userId} desconectou`)
-         console.log(`Total online: ${onlineUsers.size}`)
+         await redisOperations.removeUserOnline(userId);
+         const count = await redisOperations.getOnlineUsersCount();
+         logger.info(`Usuário ${userId} removido da lista de online. Usuários online: ${count}`);
       }
-   })
-})
+      handleDisconnect(socket);
+   });
+});
 
+const PORT = process.env.PORT || 8080;
+httpServer.listen(PORT, () => {
+   logger.info(`Servidor WebSocket rodando na porta ${PORT}`);
+});
 
+const shutdown = async () => {
+   logger.info('Desligando graciosamente...');
+   io.close(async (err) => {
+      if (err) {
+         logger.error('Erro ao fechar o servidor Socket.IO', err);
+      }
+      await closeRedisConnections();
+      logger.info('Desligamento completo.');
+      process.exit(err ? 1 : 0);
+   });
+};
 
-const PORT = process.env.PORT
-io.listen(Number(PORT))
-console.log(`\nWebSocket rodando na porta ${PORT}`)
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
