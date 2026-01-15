@@ -1,38 +1,4 @@
-[2026-01-14T23:54:12.035Z] [INFO] User registered: a1b2c3d4-e5f6-7890-1234-567890abcdef 
-[2026-01-15T00:00:15.052Z] [INFO] User registered: a1b2c3d4-e5f6-7890-1234-567890abcdef 
-[2026-01-15T00:04:29.735Z] [INFO] Initializing WebSocket server... 
-[2026-01-15T00:04:29.743Z] [INFO] WebSocket server running on port 8080 
-[2026-01-15T00:06:31.509Z] [INFO] Initializing WebSocket server... 
-[2026-01-15T00:06:31.516Z] [INFO] Websocket esta rodando na porta 8080 
-[2026-01-15T00:08:51.496Z] [INFO] User registered: a1b2c3d4-e5f6-7890-1234-567890abcdef 
-[2026-01-15T00:42:03.243Z] [INFO] Usuário registrado: a1b2c3d4-e5f6-7890-1234-567890abcdef 
-[2026-01-15T00:43:49.717Z] [INFO] Usuário registrado: a1b2c3d4-e5f6-7890-1234-567890abcdef 
-[2026-01-15T01:42:00.280Z] [INFO] Usuário registrado: a1b2c3d4-e5f6-7890-1234-567890abcdef 
-[2026-01-15T01:42:10.173Z] [INFO] Inicializando servidor WebSocket... 
-[2026-01-15T01:42:10.180Z] [INFO] Servidor WebSocket rodando na porta 8080 
-[2026-01-15T01:45:11.266Z] [INFO] Inicializando servidor WebSocket... 
-[2026-01-15T01:45:11.271Z] [INFO] Servidor WebSocket rodando na porta 8080 
-[2026-01-15T01:45:11.279Z] [INFO] Publisher Redis conectado com sucesso. 
-[2026-01-15T01:45:11.281Z] [INFO] Subscriber Redis conectado com sucesso. 
-[2026-01-15T01:46:36.308Z] [INFO] Inicializando servidor WebSocket... 
-[2026-01-15T01:46:36.314Z] [INFO] Servidor WebSocket rodando na porta 8080 
-[2026-01-15T01:46:36.322Z] [INFO] Publisher Redis conectado com sucesso. 
-[2026-01-15T01:46:36.323Z] [INFO] Subscriber Redis conectado com sucesso. 
-[2026-01-15T01:46:36.350Z] [INFO] Conectado ao PostgreSQL 
-[2026-01-15T01:46:58.945Z] [INFO] Desligando graciosamente... 
-[2026-01-15T01:46:58.949Z] [INFO] Fechando conexões Redis... 
-[2026-01-15T01:46:58.958Z] [INFO] Desligamento completo. 
-[2026-01-15T01:46:59.697Z] [INFO] Inicializando servidor WebSocket... 
-[2026-01-15T01:46:59.704Z] [INFO] Servidor WebSocket rodando na porta 8080 
-[2026-01-15T01:46:59.710Z] [INFO] Publisher Redis conectado com sucesso. 
-[2026-01-15T01:46:59.711Z] [INFO] Subscriber Redis conectado com sucesso. 
-[2026-01-15T01:46:59.735Z] [INFO] Conectado ao PostgreSQL 
-[2026-01-15T01:47:09.087Z] [INFO] Desligando graciosamente... 
-[2026-01-15T01:47:09.093Z] [INFO] Fechando conexões Redis... 
-[2026-01-15T01:47:09.104Z] [INFO] Desligamento completo. 
-[2026-01-15T01:47:09.973Z] [INFO] Inicializando servidor WebSocket... 
-[2026-01-15T01:47:09.979Z] [INFO] Servidor WebSocket rodando na porta 8080 
-[2026-01-15T01:47:09.988Z] [INFO] Publisher Redis conectado com sucesso. 
-[2026-01-15T01:47:09.989Z] [INFO] Subscriber Redis conectado com sucesso. 
-[2026-01-15T01:47:10.027Z] [INFO] Conectado ao PostgreSQL 
-[2026-01-15T01:48:15.052Z] [INFO] Desligando graciosamente... 
+{"level":30,"time":"2026-01-15T20:44:44.686Z","pid":24924,"hostname":"fedora","msg":"Servidor WebSocket rodando"}
+{"level":30,"time":"2026-01-15T20:44:44.703Z","pid":24924,"hostname":"fedora","msg":"Publisher Redis conectado com sucesso."}
+{"level":30,"time":"2026-01-15T20:44:44.705Z","pid":24924,"hostname":"fedora","msg":"Subscriber Redis conectado com sucesso."}
+{"level":30,"time":"2026-01-15T20:44:44.732Z","pid":24924,"hostname":"fedora","msg":"Conectado ao PostgreSQL"}

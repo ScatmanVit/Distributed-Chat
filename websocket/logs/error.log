@@ -1,3 +1,0 @@
-[2026-01-15T01:42:10.181Z] [ERROR] Erro no publisher Redis {"error":"Port should be >= 0 and < 65536. Received type number (NaN)."}
-[2026-01-15T01:42:10.182Z] [ERROR] Erro no subscriber Redis {"error":"Port should be >= 0 and < 65536. Received type number (NaN)."}
-[2026-01-15T01:45:11.299Z] [ERROR] Erro ao conectar no PostgreSQL: {"error":"SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string"}
