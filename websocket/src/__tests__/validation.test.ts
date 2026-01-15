@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
-import { validateData } from '../validations/validation'
-import { registerSchema, sendMessageSchema } from '../validations/schemas'
+import { validateData } from '../validations/validation.js'
+import { registerSchema, sendMessageSchema } from '../validations/schemas.js'
 
 describe('Validação de dados', () => {
 
@@ -54,7 +54,6 @@ describe('Validação de dados', () => {
          expect(result).toBeNull()
          expect(callback).toHaveBeenCalled()
       })
-
    })
 
    describe('sendMessageSchema', () => {
@@ -101,7 +100,5 @@ describe('Validação de dados', () => {
          expect(result).toBeNull()
          expect(callback).toHaveBeenCalled()
       })
-
    })
-
 })
