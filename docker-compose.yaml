@@ -80,8 +80,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.10"
-          memory: 256M
+          cpus: "0.15"
+          memory: 384M 
     networks:
       - chat_network
 
