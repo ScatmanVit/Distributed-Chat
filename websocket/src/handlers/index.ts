@@ -1,2 +1,2 @@
-export { handleRegister, handleDisconnect } from './connection.js';
+export { handleRegister, handleDisconnect } from './register.js';
 export { createSendMessageHandler } from './message.js';

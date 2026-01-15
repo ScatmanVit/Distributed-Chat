@@ -2,6 +2,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { validateData } from '../validations/validation.js'
 import { registerSchema, sendMessageSchema } from '../validations/schemas.js'
 
+
 describe('Validação de dados', () => {
 
    describe('registerSchema', () => {
