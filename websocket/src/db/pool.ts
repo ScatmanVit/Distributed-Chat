@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
-import { logger } from '../shared/logger.js';
 import dotenv from 'dotenv'
 dotenv.config() 
+import { logger } from '../shared/logger.js';
 
 export const db = new Pool({
     password: process.env.DB_PASSWORD,
