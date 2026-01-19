@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { Message } from '../types/index.js'
+import { Message, SeenMessage, SeenMessageArray } from '../types/index.js'
 
 export const createMessageService = (pool: Pool) => ({
   save: async (msg: Omit<Message, 'id' | 'sentAt'>): Promise<Message> => {
@@ -19,6 +19,29 @@ export const createMessageService = (pool: Pool) => ({
       status: row.status,
       sentAt: row.sent_at
     };
+  },
+
+  markAsSeen: async (msgs: Omit<SeenMessage, 'status' | 'sentAt'>[]): Promise<SeenMessageArray> => {
+    const messageIds = msgs.map(m => m.id)
+    const { receiverId, senderId } = msgs[0]
+    const result = await pool.query( 
+      `UPDATE messages
+        SET status = 'read'
+        WHERE id = ANY($1)
+          AND receiver_id = $2
+          AND sender_id = $3
+          AND status <> 'read'
+        RETURNING id, sender_id, receiver_id, status, sent_at;`,
+        [messageIds, receiverId, senderId]
+    );
+    
+    return result.rows.map(row => ({
+      id: row.id,
+      senderId: row.sender_id,
+      receiverId: row.receiver_id,
+      status: row.status,
+      sentAt: row.sent_at
+    }))
   },
 
   findBetweenUsers: async (userId1: string, userId2: string): Promise<Message[]> => {

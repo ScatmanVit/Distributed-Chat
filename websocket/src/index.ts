@@ -10,8 +10,8 @@ import {
 } from './redis/index.js';
 import { createUserService } from './services/user.js';
 import { createMessageService } from './services/message.js';
-import { createSendMessageHandler } from './handlers/message.js';
-import { handleRegister, handleDisconnect } from './handlers/register.js';
+import { handleRegister, handleDisconnect } from './handlers/index.js';
+import { createSendMessageHandler, createSendSeenMessageHandler } from './handlers/index.js';
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from './shared/logger.js';
@@ -35,18 +35,18 @@ const sendMessageHandler = createSendMessageHandler(
    io,
    redisOperations
 );
+const sendSeenMessageHandler = createSendSeenMessageHandler(   
+   messageService,
+   io,
+)
+
 
 io.on('connection', (socket) => {
    logger.info(`Cliente conectado: ${socket.id}`);
 
-   socket.on('register', (data, callback) =>
-      registerHandler(socket, data, callback)
-   );
-
-   socket.on('send-message', (data, callback) =>
-      sendMessageHandler(socket, data, callback)
-   );
-
+   socket.on('register', (data, callback) => registerHandler(socket, data, callback));
+   socket.on('send-message', (data, callback) => sendMessageHandler(socket, data, callback));
+   socket.on('seen-message', (data, callback) => sendSeenMessageHandler(socket, data, callback))
    socket.on('disconnect', () => handleDisconnect(socket));
 });
 

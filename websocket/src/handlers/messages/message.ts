@@ -1,10 +1,10 @@
 import { Socket, Server } from 'socket.io';
-import { checkRateLimit } from '../shared/rate-limiter.js';
-import { validateData } from '../validations/validation.js';
-import { sendMessageSchema } from '../validations/schemas.js';
-import { MessageService } from '../services/message.js';
-import { RedisOperations } from '../redis/index.js';
-import { logger } from '../shared/logger.js';
+import { checkRateLimit } from '../../shared/rate-limiter.js';
+import { validateData } from '../../validations/validation.js';
+import { sendMessageSchema } from '../../validations/schemas.js';
+import { MessageService } from '../../services/message.js';
+import { RedisOperations } from '../../redis/index.js';
+import { logger } from '../../shared/logger.js';
 
 export const createSendMessageHandler = (
    messageService: MessageService,
@@ -39,11 +39,7 @@ export const createSendMessageHandler = (
             status: 'sent'
          });
 
-         // envia para TODOS os dispositivos do destinatário
          io.to(validated.toUserId).emit('new-message', message);
-
-         // sincroniza todos os dispositivos do remetente
-         io.to(userId).emit('message-sent', message);
 
          callback?.({ success: true, message });
       } catch (error) {

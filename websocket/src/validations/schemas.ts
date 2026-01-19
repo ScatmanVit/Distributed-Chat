@@ -16,4 +16,17 @@ const sendMessageSchema = z.object({
     .max(5000, 'Mensagem muito longa (máximo 5000 caracteres)')
 })
 
-export { registerSchema, sendMessageSchema }  
+const seenMessageSchema = z.array(
+  z.object({
+    id: z.string()
+      .length(36, 'MessageId deve ter exatamente 36 caracteres')
+      .regex(/^[a-zA-Z0-9-]+$/, 'MessageId deve conter apenas letras, números ou -'),
+    toUserId: z.string()
+      .length(36, 'UserId deve ter exatamente 36 caracteres')
+      .regex(/^[a-zA-Z0-9-]+$/, 'UserId deve conter apenas letras, números ou -'),
+    seen: z.literal(true, "As mensagens não foram marcadas como visualizadas.")
+  })
+)
+.min(1, "Deve haver pelo menos 1 mensagem a ser visualizada")
+
+export { registerSchema, sendMessageSchema, seenMessageSchema }  
