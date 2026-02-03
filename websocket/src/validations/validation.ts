@@ -13,7 +13,7 @@ export function validateData<T>(
             message: err.message
         }))
 
-        console.log('Erro de validação:', errors)
+        console.error('Erro de validação:', errors)
 
         if (callback) {
             callback({ success: false, errors })

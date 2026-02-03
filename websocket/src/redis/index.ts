@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
+import dotenv from 'dotenv';
+dotenv.config();
 import { logger } from '../shared/logger.js';
-import dotenv from 'dotenv'
-dotenv.config()
 
 const redisConfig = {
    host: process.env.REDIS_HOST,
@@ -27,38 +27,49 @@ subClient.on('error', (err) => {
    logger.error('Erro no subscriber Redis', err);
 });
 
+const rateCountKey = (userId: string) =>
+   `rate_limit:msg:count:${userId}`;
+
+const rateBlockKey = (userId: string) =>
+   `rate_limit:msg:block:${userId}`;
+
 export interface RedisOperations {
-   setUserOnline: (userId: string, socketId: string) => Promise<void>;
-   getUserSocketId: (userId: string) => Promise<string | null>;
-   removeUserOnline: (userId: string) => Promise<void>;
-   getOnlineUsersCount: () => Promise<number>;
+   isRateLimited: (userId: string) => Promise<number | null>;
+   incrementRate: (userId: string, windowMs: number) => Promise<number>;
+   blockRate: (userId: string, blockMs: number) => Promise<void>;
+   resetRate: (userId: string) => Promise<void>;
 }
 
-export const setUserOnline = async (userId: string, socketId: string): Promise<void> => {
-   await pubClient.hset('online_users', userId, socketId);
-};
-
-export const getUserSocketId = async (userId: string): Promise<string | null> => {
-   return await pubClient.hget('online_users', userId);
-};
-
-export const removeUserOnline = async (userId: string): Promise<void> => {
-   await pubClient.hdel('online_users', userId);
-};
-
-export const getOnlineUsersCount = async (): Promise<number> => {
-   return await pubClient.hlen('online_users');
-};
-
 export const redisOperations: RedisOperations = {
-   setUserOnline,
-   getUserSocketId,
-   removeUserOnline,
-   getOnlineUsersCount
+   async isRateLimited(userId) {
+      const exists = await pubClient.get(rateBlockKey(userId));
+      if (!exists) return null;
+      return pubClient.pttl(rateBlockKey(userId));
+   },
+
+   async incrementRate(userId, windowMs) {
+      const key = rateCountKey(userId);
+      const count = await pubClient.incr(key);
+      if (count === 1) {
+         await pubClient.pexpire(key, windowMs);
+      }
+      return count;
+   },
+
+   async blockRate(userId, blockMs) {
+      await pubClient.psetex(rateBlockKey(userId), blockMs, '1');
+   },
+
+   async resetRate(userId) {
+      await pubClient.del(
+         rateCountKey(userId),
+         rateBlockKey(userId)
+      );
+   }
 };
 
 export const closeRedisConnections = async (): Promise<void> => {
-   logger.info('Fechando conexões Redis...');
    await pubClient.quit();
    await subClient.quit();
 };
+
