@@ -1,6 +1,9 @@
+import jwt from 'jsonwebtoken'; 
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { createAdapter } from '@socket.io/redis-adapter';
+import dotenv from 'dotenv';
+dotenv.config();
 import { db } from './db/pool.js';
 import {
    pubClient,
@@ -9,11 +12,10 @@ import {
    redisOperations
 } from './redis/index.js';
 import { createUserService } from './services/user.js';
+import { createAuthMiddleware } from './middleware/auth.js';
 import { createMessageService } from './services/message.js';
-import { handleRegister, handleDisconnect } from './handlers/index.js';
+import { handleDisconnect } from './handlers/index.js';
 import { createSendMessageHandler, createSendSeenMessageHandler } from './handlers/index.js';
-import dotenv from 'dotenv';
-dotenv.config();
 import { logger } from './shared/logger.js';
 
 
@@ -29,7 +31,6 @@ const io = new Server(httpServer, {
 const userService = createUserService(db);
 const messageService = createMessageService(db);
 
-const registerHandler = handleRegister(userService);
 const sendMessageHandler = createSendMessageHandler(
    messageService,
    io,
@@ -40,11 +41,13 @@ const sendSeenMessageHandler = createSendSeenMessageHandler(
    io,
 )
 
+const authMiddleware = createAuthMiddleware(jwt, userService)
+
+io.use(authMiddleware)
 
 io.on('connection', (socket) => {
    logger.info(`Cliente conectado: ${socket.id}`);
 
-   socket.on('register', (data, callback) => registerHandler(socket, data, callback));
    socket.on('send-message', (data, callback) => sendMessageHandler(socket, data, callback));
    socket.on('seen-message', (data, callback) => sendSeenMessageHandler(socket, data, callback))
    socket.on('disconnect', () => handleDisconnect(socket));

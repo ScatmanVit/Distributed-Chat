@@ -12,26 +12,27 @@ export const createSendSeenMessageHandler = (
         const validated = validateData(seenMessageSchema, data, callback)
         if (!validated) return
 
-        const userId = socket.data.userId;
-        if (!userId) {
+        const readerId = socket.data.userId;
+        if (!readerId) {
             callback?.({ success: false, error: 'Autenticação necessária' });
             return;
         }
         
-         const msgs = validated.map((msg) => ({
-                id: msg.id,
-                senderId: userId,
-                receiverId: msg.toUserId,
-            }
-        ))
+        const msgs = validated.map((msg) => ({
+            id: msg.id,
+            authorId: msg.toUserId,
+            readerId: readerId,
+        }))
+        
         const messagesSeen = await messageService.markAsSeen(msgs) 
         if (messagesSeen.length === 0) {
             return callback?.({ success: true })
         }
-        const { receiverId } = messagesSeen[0]
+        
+        const { authorId } = msgs[0];
 
-        io.to(receiverId).emit('messages-seen-new', messagesSeen);
-        socket.to(userId).emit('messages-seen-new', messagesSeen);
+        socket.to(readerId).emit('messages-seen-new', messagesSeen);
+        io.to(authorId).emit('messages-seen-new', messagesSeen);
 
         callback?.({ success: true });
     } catch (error) {

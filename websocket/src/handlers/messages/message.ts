@@ -32,17 +32,19 @@ export const createSendMessageHandler = (
             return;
          }
 
-         const message = await messageService.save({
-            senderId: userId,
-            receiverId: validated.toUserId,
-            content: validated.content,
-            status: 'sent'
-         });
+          const message = await messageService.save({
+             senderId: userId,
+             receiverId: validated.toUserId,
+             content: validated.content,
+             status: 'sent'
+          });
 
-         io.to(validated.toUserId).emit('new-message', message);
-         socket.to(userId).emit('new-message', message);
+          io.to(validated.toUserId).emit('new-message', message);
+          socket.to(userId).emit('new-message', message);
 
-         callback?.({ success: true, message });
+          messageService.markAsDelivered(message.id);
+
+          callback?.({ success: true, message });
       } catch (error) {
          logger.error('Erro ao enviar mensagem', error as Error);
          callback?.({ success: false, error: 'Erro interno ao enviar mensagem' });

@@ -3,24 +3,31 @@ export interface User {
    username: string,
 }
 
-type EnumTypeMessage = 'pending' | 'sent' | 'delivered' | 'read' | 'failed'
+export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed'
 
 export interface Message {
    id: string,
    senderId: string,
    receiverId: string,
    content: string,
-   status: EnumTypeMessage,
+   status: MessageStatus,
    sentAt: Date
 }
 
 export interface SeenMessage {
    id: string,
    senderId: string,
-   status: EnumTypeMessage,
+   status: MessageStatus,
    receiverId: string,
    sentAt: Date
 }
+
+export interface SeenMessageInput {
+   id: string,
+   authorId: string,
+   readerId: string,
+}
+
 export type SeenMessageArray = SeenMessage[]
 
 export interface ValidateResult<T> {

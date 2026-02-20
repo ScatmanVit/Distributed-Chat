@@ -11,7 +11,8 @@ describe('SendMessage Handler', () => {
    beforeEach(() => {
       vi.clearAllMocks();
       mockMessageService = {
-         save: vi.fn()
+         save: vi.fn(),
+         markAsDelivered: vi.fn()
       };
       mockIo = {
          to: vi.fn().mockReturnValue({

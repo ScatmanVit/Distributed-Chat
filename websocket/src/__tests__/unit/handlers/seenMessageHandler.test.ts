@@ -55,11 +55,12 @@ describe('SeenMessage Handler', () => {
          expect(mockMessageService.markAsSeen).toHaveBeenCalledWith([
             {
                id: '550e8400-e29b-41d4-a716-446655440001',
-               senderId: mockSocket.data.userId,
-               receiverId: '550e8400-e29b-41d4-a716-446655440002'
+               authorId: '550e8400-e29b-41d4-a716-446655440002',
+               readerId: mockSocket.data.userId
             }
          ]);
-         expect(mockIo.to).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
+         expect(mockSocket.to).toHaveBeenCalledWith(mockSocket.data.userId);
+         expect(mockIo.to).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440002');
          expect(mockCallback).toHaveBeenCalledWith({ success: true });
       });
 
@@ -79,8 +80,8 @@ describe('SeenMessage Handler', () => {
          await handler(mockSocket, data, mockCallback);
 
          expect(mockMessageService.markAsSeen).toHaveBeenCalledWith([
-            { id: '550e8400-e29b-41d4-a716-446655440001', senderId: mockSocket.data.userId, receiverId: '550e8400-e29b-41d4-a716-446655440002' },
-            { id: '550e8400-e29b-41d4-a716-446655440003', senderId: mockSocket.data.userId, receiverId: '550e8400-e29b-41d4-a716-446655440002' }
+            { id: '550e8400-e29b-41d4-a716-446655440001', authorId: '550e8400-e29b-41d4-a716-446655440002', readerId: mockSocket.data.userId },
+            { id: '550e8400-e29b-41d4-a716-446655440003', authorId: '550e8400-e29b-41d4-a716-446655440002', readerId: mockSocket.data.userId }
          ]);
       });
 

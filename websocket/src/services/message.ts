@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { Message, SeenMessage, SeenMessageArray } from '../types/index.js'
+import { Message, SeenMessageArray, SeenMessageInput, MessageStatus } from '../types/index.js'
 
 export const createMessageService = (pool: Pool) => ({
   save: async (msg: Omit<Message, 'id' | 'sentAt'>): Promise<Message> => {
@@ -21,9 +21,12 @@ export const createMessageService = (pool: Pool) => ({
     };
   },
 
-  markAsSeen: async (msgs: Omit<SeenMessage, 'status' | 'sentAt'>[]): Promise<SeenMessageArray> => {
-    const messageIds = msgs.map(m => m.id)
-    const { receiverId, senderId } = msgs[0]
+  markAsSeen: async (msgs: SeenMessageInput[]): Promise<SeenMessageArray> => {
+    if (msgs.length === 0) return [];
+    
+    const messageIds = msgs.map(m => m.id);
+    const { authorId, readerId } = msgs[0];
+    
     const result = await pool.query( 
       `UPDATE messages
         SET status = 'read'
@@ -32,7 +35,7 @@ export const createMessageService = (pool: Pool) => ({
           AND sender_id = $3
           AND status <> 'read'
         RETURNING id, sender_id, receiver_id, status, sent_at;`,
-        [messageIds, receiverId, senderId]
+        [messageIds, readerId, authorId]
     );
     
     return result.rows.map(row => ({
@@ -41,7 +44,16 @@ export const createMessageService = (pool: Pool) => ({
       receiverId: row.receiver_id,
       status: row.status,
       sentAt: row.sent_at
-    }))
+    }));
+  },
+
+  markAsDelivered: async (messageId: string): Promise<void> => {
+    await pool.query(
+      `UPDATE messages 
+       SET status = 'delivered' 
+       WHERE id = $1 AND status = 'sent'`,
+      [messageId]
+    );
   },
 
   findBetweenUsers: async (userId1: string, userId2: string): Promise<Message[]> => {
@@ -63,7 +75,7 @@ export const createMessageService = (pool: Pool) => ({
     }));
   },
 
-  updateStatus: async (messageId: string, status: string): Promise<void> => {
+  updateStatus: async (messageId: string, status: MessageStatus): Promise<void> => {
     await pool.query(
       'UPDATE messages SET status = $1 WHERE id = $2',
       [status, messageId]

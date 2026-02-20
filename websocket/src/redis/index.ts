@@ -1,6 +1,4 @@
 import { Redis } from 'ioredis';
-import dotenv from 'dotenv';
-dotenv.config();
 import { logger } from '../shared/logger.js';
 
 const redisConfig = {
