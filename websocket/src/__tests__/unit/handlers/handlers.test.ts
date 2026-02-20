@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { handleRegister } from '../handlers/register.js';
+import { handleRegister } from '../../../handlers/register.js';
 
 describe('Handlers', () => {
   it('deve registrar usuário', async () => { 
