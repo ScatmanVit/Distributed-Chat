@@ -31,6 +31,7 @@ export const createSendSeenMessageHandler = (
         const { receiverId } = messagesSeen[0]
 
         io.to(receiverId).emit('messages-seen-new', messagesSeen);
+        socket.to(userId).emit('messages-seen-new', messagesSeen);
 
         callback?.({ success: true });
     } catch (error) {

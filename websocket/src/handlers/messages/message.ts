@@ -40,6 +40,7 @@ export const createSendMessageHandler = (
          });
 
          io.to(validated.toUserId).emit('new-message', message);
+         socket.to(userId).emit('new-message', message);
 
          callback?.({ success: true, message });
       } catch (error) {
