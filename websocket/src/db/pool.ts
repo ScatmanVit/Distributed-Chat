@@ -1,10 +1,17 @@
 import { Pool } from 'pg';
 import { logger } from '../shared/logger.js';
 
+const getDatabaseName = () => {
+  if (process.env.NODE_ENV === 'test') {
+    return process.env.DB_NAME || 'chat_db_test';
+  }
+  return process.env.DB_NAME || 'chat_db';
+};
+
 export const db = new Pool({
     password: process.env.DB_PASSWORD,
     port: Number(process.env.DB_PORT),
-    database: process.env.DB_NAME,
+    database: getDatabaseName(),
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     connectionTimeoutMillis: 2000,

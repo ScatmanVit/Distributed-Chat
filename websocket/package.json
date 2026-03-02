@@ -9,6 +9,8 @@
     "test:watch": "vitest --reporter verbose",
     "test:ui": "vitest --ui --reporter verbose",
     "test:coverage": "vitest run --coverage --reporter verbose",
+    "test:integration": "vitest run src/__tests__/integration --reporter verbose",
+    "test:integration:watch": "vitest src/__tests__/integration --reporter verbose",
     "db:psql": "sudo docker exec -it chat_db psql -U user -d chat_db",
     "db:logs": "sudo docker logs -f chat_db",
     "dev": "NODE_ENV=development tsx watch src/index.ts",

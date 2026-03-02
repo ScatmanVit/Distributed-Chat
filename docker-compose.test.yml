@@ -1,0 +1,109 @@
+version: '3.8'
+
+env_file:
+  - .env.test.compose
+
+services:
+  db_test:
+    image: postgres:latest
+    container_name: chat_db_test
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-chat_db_test}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-chat_db_test}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chat_test_network
+
+  redis_test:
+    image: redis:alpine
+    container_name: chat_redis_test
+    networks:
+      - chat_test_network
+
+  db_migrator_test:
+    build: ./db
+    container_name: chat_db_migrator_test
+    depends_on:
+      db_test:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db_test:5432/${DB_NAME:-chat_db_test}
+    networks:
+      - chat_test_network
+
+  websocket_1:
+    build: ./websocket
+    container_name: chat_ws_1
+    environment:
+      PORT: 8080
+      REDIS_HOST: redis_test
+      REDIS_PORT: 6379
+      DB_HOST: db_test
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-chat_db_test}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      URL_FRONT_END: '*'
+    depends_on:
+      db_migrator_test:
+        condition: service_completed_successfully
+      redis_test:
+        condition: service_started
+    networks:
+      - chat_test_network
+
+  websocket_2:
+    build: ./websocket
+    container_name: chat_ws_2
+    environment:
+      PORT: 8081
+      REDIS_HOST: redis_test
+      REDIS_PORT: 6379
+      DB_HOST: db_test
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-chat_db_test}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      URL_FRONT_END: '*'
+    depends_on:
+      db_migrator_test:
+        condition: service_completed_successfully
+      redis_test:
+        condition: service_started
+    networks:
+      - chat_test_network
+
+  test_runner:
+    build:
+      context: ./websocket
+      dockerfile: Dockerfile.test
+    container_name: chat_test_runner
+    depends_on:
+      websocket_1:
+        condition: service_started
+      websocket_2:
+        condition: service_started
+    environment:
+      WS_URL_1: ws://chat_ws_1:8080
+      WS_URL_2: ws://chat_ws_2:8081
+      DB_HOST: db_test
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-chat_db_test}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis_test
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - chat_test_network
+
+networks:
+  chat_test_network:
+    driver: bridge

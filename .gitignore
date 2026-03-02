@@ -1,4 +1,24 @@
 .env
+.env.local
+.env.*.local
+.env.test.compose
 node_modules/
 dist/
 .github/workflows/deploy.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/

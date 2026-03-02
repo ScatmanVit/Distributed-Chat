@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY vitest.config.ts ./
+
+RUN npm install
+
+COPY src/ ./src/
+COPY .env.test ./.env || true
+
+ENV NODE_ENV=test
+ENV WS_URL_1=ws://websocket_1:8080
+ENV WS_URL_2=ws://websocket_2:8081
+
+CMD ["npm", "run", "test:integration"]
