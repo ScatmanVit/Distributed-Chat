@@ -4,7 +4,7 @@
 .env.test.compose
 node_modules/
 dist/
-.github/workflows/deploy.yaml
+
 
 # IDE
 .idea/

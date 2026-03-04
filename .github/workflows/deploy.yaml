@@ -21,9 +21,13 @@ jobs:
         working-directory: ./websocket
         run: npm ci
 
-      - name: testes de validação do websocket
+      - name: testes unitários
         working-directory: ./websocket
         run: npm test
+
+      - name: testes de integração
+        working-directory: .
+        run: docker-compose -f docker-compose.test.yml --env-file .env.test.compose up --build --abort-on-container-exit
 
   # deploy: 
   #   needs: build-and-test 
